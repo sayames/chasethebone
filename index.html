@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chase the Bone Mini Game</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
+  <script>
+    // Initialize scene, camera, and renderer
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Add a ground plane
+    const groundGeometry = new THREE.PlaneGeometry(10, 10);
+    const groundMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, side: THREE.DoubleSide });
+    const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+    ground.rotation.x = Math.PI / 2;
+    scene.add(ground);
+
+    // Add the dog
+    const dogGeometry = new THREE.BoxGeometry(1, 1, 1);
+    const dogMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const dog = new THREE.Mesh(dogGeometry, dogMaterial);
+    dog.position.y = 0.5;
+    scene.add(dog);
+
+    // Add the bone (you control this)
+    const boneGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+    const boneMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    const bone = new THREE.Mesh(boneGeometry, boneMaterial);
+    bone.position.y = 0.25;
+    scene.add(bone);
+
+    // Set the initial camera position
+    camera.position.z = 5;
+
+    // Game loop
+    function animate() {
+      requestAnimationFrame(animate);
+
+      // Move the dog towards the bone
+      const target = bone.position.clone().sub(dog.position).normalize();
+      dog.position.add(target.multiplyScalar(0.02));
+
+      // Check for collisions
+      const distance = bone.position.distanceTo(dog.position);
+      if (distance < 0.5) {
+        alert("Game Over! The dog caught the bone!");
+        window.location.reload(); // Restart the game
+      }
+
+      // Render the scene
+      renderer.render(scene, camera);
+    }
+
+    // Handle user input
+    document.addEventListener('keydown', (event) => {
+      const moveAmount = 0.1;
+      if (event.key === 'ArrowUp') {
+        bone.position.z -= moveAmount;
+      } else if (event.key === 'ArrowDown') {
+        bone.position.z += moveAmount;
+      } else if (event.key === 'ArrowLeft') {
+        bone.position.x -= moveAmount;
+      } else if (event.key === 'ArrowRight') {
+        bone.position.x += moveAmount;
+      }
+    });
+
+    animate();
+  </script>
+</body>
+</html>
