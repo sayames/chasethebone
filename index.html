@@ -1,92 +1,75 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Chase the Bone Mini Game</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chase the Bone</title>
   <style>
     body {
       margin: 0;
       overflow: hidden;
     }
-    canvas {
-      display: block;
+    #game-container {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #87CEEB;
     }
   </style>
 </head>
 <body>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
-  <script>
-    // Initialize scene, camera, and renderer
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
+  <div id="game-container">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
+    <script>
+      // Setup
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      const renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.getElementById('game-container').appendChild(renderer.domElement);
 
-    // Add a ground plane
-    const groundGeometry = new THREE.PlaneGeometry(10, 10);
-    const groundMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, side: THREE.DoubleSide });
-    const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-    ground.rotation.x = Math.PI / 2;
-    scene.add(ground);
+      // Dog Model
+      const loader = new THREE.GLTFLoader();
+      let dogModel;
 
-    // Add the dog
-    const dogGeometry = new THREE.BoxGeometry(1, 1, 1);
-    const dogMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-    const dog = new THREE.Mesh(dogGeometry, dogMaterial);
-    dog.position.y = 0.5;
-    scene.add(dog);
+      loader.load('path/to/3d/dog_model.gltf', (gltf) => {
+        dogModel = gltf.scene;
+        scene.add(dogModel);
+      });
 
-    // Add the bone (you control this)
-    const boneGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-    const boneMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    const bone = new THREE.Mesh(boneGeometry, boneMaterial);
-    bone.position.y = 0.25;
-    scene.add(bone);
+      // Bone Model
+      const boneGeometry = new THREE.BoxGeometry(1, 1, 1);
+      const boneMaterial = new THREE.MeshBasicMaterial({ color: 0xFF4500 });
+      const bone = new THREE.Mesh(boneGeometry, boneMaterial);
+      scene.add(bone);
 
-    // Set the initial camera position
-    camera.position.z = 5;
+      // Camera Position
+      camera.position.z = 5;
 
-    let gameOver = false; // Added variable to track game status
-
-    // Game loop
-    function animate() {
-      if (!gameOver) { // Check if the game is not over
+      // Render Loop
+      function animate() {
         requestAnimationFrame(animate);
 
-        // Move the dog towards the bone
-        const target = bone.position.clone().sub(dog.position).normalize();
-        dog.position.add(target.multiplyScalar(0.02));
-
-        // Check for collisions
-        const distance = bone.position.distanceTo(dog.position);
-        if (distance < 0.5) {
-          gameOver = true; // Set game status to over
-          alert("Game Over! The dog caught the bone!");
-          window.location.reload(); // Restart the game
+        // Rotate the bone
+        if (bone) {
+          bone.rotation.x += 0.01;
+          bone.rotation.y += 0.01;
         }
 
-        // Render the scene
+        // Move the dog towards the bone
+        if (dogModel && bone) {
+          const target = bone.position;
+          const dogSpeed = 0.05;
+          dogModel.position.lerp(target, dogSpeed);
+        }
+
         renderer.render(scene, camera);
       }
-    }
 
-    // Handle user input
-    document.addEventListener('keydown', (event) => {
-      const moveAmount = 0.1;
-      if (!gameOver) { // Check if the game is not over
-        if (event.key === 'ArrowUp') {
-          bone.position.z -= moveAmount;
-        } else if (event.key === 'ArrowDown') {
-          bone.position.z += moveAmount;
-        } else if (event.key === 'ArrowLeft') {
-          bone.position.x -= moveAmount;
-        } else if (event.key === 'ArrowRight') {
-          bone.position.x += moveAmount;
-        }
-      }
-    });
-
-    animate();
-  </script>
+      animate();
+    </script>
+  </div>
 </body>
 </html>
