@@ -46,36 +46,43 @@
     // Set the initial camera position
     camera.position.z = 5;
 
+    let gameOver = false; // Added variable to track game status
+
     // Game loop
     function animate() {
-      requestAnimationFrame(animate);
+      if (!gameOver) { // Check if the game is not over
+        requestAnimationFrame(animate);
 
-      // Move the dog towards the bone
-      const target = bone.position.clone().sub(dog.position).normalize();
-      dog.position.add(target.multiplyScalar(0.02));
+        // Move the dog towards the bone
+        const target = bone.position.clone().sub(dog.position).normalize();
+        dog.position.add(target.multiplyScalar(0.02));
 
-      // Check for collisions
-      const distance = bone.position.distanceTo(dog.position);
-      if (distance < 0.5) {
-        alert("Game Over! The dog caught the bone!");
-        window.location.reload(); // Restart the game
+        // Check for collisions
+        const distance = bone.position.distanceTo(dog.position);
+        if (distance < 0.5) {
+          gameOver = true; // Set game status to over
+          alert("Game Over! The dog caught the bone!");
+          window.location.reload(); // Restart the game
+        }
+
+        // Render the scene
+        renderer.render(scene, camera);
       }
-
-      // Render the scene
-      renderer.render(scene, camera);
     }
 
     // Handle user input
     document.addEventListener('keydown', (event) => {
       const moveAmount = 0.1;
-      if (event.key === 'ArrowUp') {
-        bone.position.z -= moveAmount;
-      } else if (event.key === 'ArrowDown') {
-        bone.position.z += moveAmount;
-      } else if (event.key === 'ArrowLeft') {
-        bone.position.x -= moveAmount;
-      } else if (event.key === 'ArrowRight') {
-        bone.position.x += moveAmount;
+      if (!gameOver) { // Check if the game is not over
+        if (event.key === 'ArrowUp') {
+          bone.position.z -= moveAmount;
+        } else if (event.key === 'ArrowDown') {
+          bone.position.z += moveAmount;
+        } else if (event.key === 'ArrowLeft') {
+          bone.position.x -= moveAmount;
+        } else if (event.key === 'ArrowRight') {
+          bone.position.x += moveAmount;
+        }
       }
     });
 
